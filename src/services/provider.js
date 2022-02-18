@@ -31,7 +31,7 @@ const getAll = (resource) => {
 /** @param {string} id */ 
 const getSingle = (resource, id) => { 
   return axios 
-    .get(`${BASE_URL}/${resource}/${id}`) 
+    .get(`${getUrl()}/${resource}/${id}`) 
     .then(handleResponse) 
     .catch(handleError); 
 }; 
