@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Base from './../Base'
 import { Button, Container } from "reactstrap";
 import TextField from "@material-ui/core/TextField";
 import { Redirect } from "react-router-dom";
@@ -14,7 +15,7 @@ const theme = createMuiTheme({
   },
 });
 
-export default class InputItem extends Component {
+export default class InputItem extends Base {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,17 +41,19 @@ export default class InputItem extends Component {
 
   addItem = () => {
     let token = sessionStorage.getItem("token");
-    var formdata = new FormData();
-    formdata.append("title", this.state.taskData.title);
-    formdata.append("description", this.state.taskData.description);
+    var raw = JSON.stringify({
+      "title": this.state.taskData.title,
+      "description": this.state.taskData.description
+    });
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Authorization ${token}`);
     var requestOptions = {
       method: "POST",
-      body: formdata,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      body: raw,
+      headers: myHeaders,
     };
-    fetch("https://todo.crazytechsolution.com/api/user/todos", requestOptions)
+    fetch(this.getUrl() + 'todo', requestOptions)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {
@@ -76,13 +79,14 @@ export default class InputItem extends Component {
   };
   getTaskData() {
     let token = sessionStorage.getItem("token");
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Authorization ${token}`);
     var requestOptions = {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: myHeaders,
     };
-    fetch("https://todo.crazytechsolution.com/api/user/todos", requestOptions)
+    fetch(this.getUrl() + "todo/all", requestOptions)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {
@@ -108,14 +112,15 @@ export default class InputItem extends Component {
   };
   handleDelete = (id) => {
     let token = sessionStorage.getItem("token");
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Authorization ${token}`);
     var requestOptions = {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: myHeaders,
     };
     fetch(
-      "https://todo.crazytechsolution.com/api/user/todos/" + id,
+      this.getUrl() + "todo?id=" + id,
       requestOptions
     )
       .then((response) => response.json())
@@ -155,30 +160,31 @@ export default class InputItem extends Component {
     let { id, title, description } = this.state.editTaskData;
     let token = sessionStorage.getItem("token");
     var myHeaders = new Headers();
-    myHeaders.append("Authorization", `Bearer ${token}`);
-    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Authorization ${token}`);
 
-    var urlencoded = new URLSearchParams();
-    urlencoded.append("title", title);
-    urlencoded.append("description", description);
+    var raw = JSON.stringify({
+      "title": title,
+      "description": description
+    });
 
     var requestOptions = {
       method: "PUT",
       headers: myHeaders,
-      body: urlencoded
+      body: raw
     };
 
     fetch(
-      "https://todo.crazytechsolution.com/api/user/todos/" + id,
+      this.getUrl()+"todo?id=" + id,
       requestOptions
     )
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {
-          this.setState( {
-              editTaskDataModal: false,
-              editTaskData: { title, description }
-            },
+          this.setState({
+            editTaskDataModal: false,
+            editTaskData: { title, description }
+          },
             () => this.getTaskData()
           );
           setTimeout(() => {

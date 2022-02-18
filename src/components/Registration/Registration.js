@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Base from './../Base'
 import { TextField, Button } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import { Container } from "reactstrap";
@@ -14,7 +15,7 @@ const theme = createMuiTheme({
     },
   },
 });
-export default class Registration extends Component {
+export default class Registration extends Base {
   state = {
     signupData: {
       first_name: "",
@@ -42,20 +43,25 @@ export default class Registration extends Component {
     this.setState({ signupData });
   };
   onSubmitHandler = (e) => {
-    e.preventDefault();
-    var formdata = new FormData();
-    formdata.append("first_name", this.state.signupData.first_name);
-    formdata.append("last_name", this.state.signupData.last_name);
-    formdata.append("email", this.state.signupData.email);
-    formdata.append("password", this.state.signupData.password);
-    formdata.append("phone", this.state.signupData.phone);
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    var raw = JSON.stringify({
+      "password": this.state.signupData.password,
+      "email": this.state.signupData.email,
+      "firstname":this.state.signupData.first_name,
+      "lastname":this.state.signupData.last_name,
+      "phonenumber":this.state.signupData.phone,
+    });
 
     var requestOptions = {
-      method: "POST",
-      body: formdata,
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
     };
     fetch(
-      "https://todo.crazytechsolution.com/api/user/register",
+      this.getUrl() + 'Authentication/register',
       requestOptions
     )
       .then((response) => response.json())
@@ -80,35 +86,37 @@ export default class Registration extends Component {
         setTimeout(() => {
           this.setState({ successMsg: result.message });
         }, 1000);
-        if (result.status === "error" && result.validation_errors.first_name) {
-          this.setState({
-            error: true,
-            errMsgFirstName: result.validation_errors.first_name[0],
-          });
-        }
-        if (result.status === "error" && result.validation_errors.last_name) {
-          this.setState({
-            error: true,
-            errMsgLastName: result.validation_errors.last_name[0],
-          });
-        }
-        if (result.status === "error" && result.validation_errors.phone) {
-          this.setState({
-            error: true,
-            errMsgPhone: result.validation_errors.phone[0],
-          });
-        }
-        if (result.status === "error" && result.validation_errors.email) {
-          this.setState({
-            error: true,
-            errMsgEmail: result.validation_errors.email[0],
-          });
-        }
-        if (result.status === "error" && result.validation_errors.password) {
-          this.setState({
-            error: true,
-            errMsgPassword: result.validation_errors.password[0],
-          });
+        if (result.status === 400 && result.errors) {
+          if (result.errors['FirstName']) {
+            this.setState({
+              error: true,
+              errMsgFirstName: result.errors['FirstName'][0],
+            });
+          }
+          if (result.errors['LastName']) {
+            this.setState({
+              error: true,
+              errMsgLastName: result.errors['LastName'][0],
+            });
+          }
+          if (result.errors['PhoneNumber']) {
+            this.setState({
+              error: true,
+              errMsgPhone: result.errors['PhoneNumber'][0],
+            });
+          }
+          if (result.errors['Email']) {
+            this.setState({
+              error: true,
+              errMsgEmail: result.errors['Email'][0],
+            });
+          }
+          if (result.errors['Password']) {
+            this.setState({
+              error: true,
+              errMsgPassword: result.errors['Password'][0],
+            });
+          }
         }
       })
       .catch((error) => {

@@ -10,7 +10,11 @@ export default class Header extends Component {
   }
 
   todoLogout = () => {
-    let token = sessionStorage.getItem("token");
+    window.location.reload();
+    sessionStorage.clear();
+    let temp = window.location.origin;
+    window.location.href = temp + "/login";
+    /*let token = sessionStorage.getItem("token");
     var myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${token}`);
 
@@ -29,7 +33,7 @@ export default class Header extends Component {
           window.location.href = temp + "/login";
         }
       })
-      .catch((error) => console.log("error", error));
+      .catch((error) => console.log("error", error));*/
   };
   componentDidMount() {
     let isLoggedIn = sessionStorage.getItem("isLoggedIn");
